@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|d:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\fashion store system\\fashion store system\\fashion store system.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|solutionrelative:fashion store system\\fashion store system.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|d:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\fashion store system\\fashion store system\\views\\shared\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|solutionrelative:fashion store system\\views\\shared\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|d:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\fashion store system\\fashion store system\\views\\sales\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|solutionrelative:fashion store system\\views\\sales\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|d:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\fashion store system\\fashion store system\\controllers\\salescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|solutionrelative:fashion store system\\controllers\\salescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Fashion Store System",
+              "DocumentMoniker": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Fashion Store System.csproj",
+              "RelativeDocumentMoniker": "Fashion Store System\\Fashion Store System.csproj",
+              "ToolTip": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Fashion Store System.csproj",
+              "RelativeToolTip": "Fashion Store System\\Fashion Store System.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-04-15T21:36:08.42Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "_AdminLayout.cshtml",
+              "DocumentMoniker": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Views\\Shared\\_AdminLayout.cshtml",
+              "RelativeDocumentMoniker": "Fashion Store System\\Views\\Shared\\_AdminLayout.cshtml",
+              "ToolTip": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Views\\Shared\\_AdminLayout.cshtml",
+              "RelativeToolTip": "Fashion Store System\\Views\\Shared\\_AdminLayout.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFsAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-15T21:32:37.772Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Views\\Sales\\Create.cshtml",
+              "RelativeDocumentMoniker": "Fashion Store System\\Views\\Sales\\Create.cshtml",
+              "ToolTip": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Views\\Sales\\Create.cshtml",
+              "RelativeToolTip": "Fashion Store System\\Views\\Sales\\Create.cshtml",
+              "ViewState": "AgIAAG4AAAAAAAAAAAAAAHoAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-14T21:14:03.437Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "SalesController.cs",
+              "DocumentMoniker": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Controllers\\SalesController.cs",
+              "RelativeDocumentMoniker": "Fashion Store System\\Controllers\\SalesController.cs",
+              "ToolTip": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Controllers\\SalesController.cs",
+              "RelativeToolTip": "Fashion Store System\\Controllers\\SalesController.cs",
+              "ViewState": "AgIAAGAAAAAAAAAAAAAUwGcAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-14T21:10:55.357Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

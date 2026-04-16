@@ -1,0 +1,188 @@
+﻿@model Fashion_Store_System.ViewModels.CategoryVM.CategoryVM
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>إضافة قسم جديد</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        :root {
+            --side-bg: #40415A; /* الرمادي المزرق */
+            --pale-bg: #F8EDED; /* البيج الوردي */
+            --dusty-accent: #E8D3D3; /* الوردي البودرة */
+        }
+
+        body {
+            background-color: var(--pale-bg);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            border: none;
+            width: 100%;
+            max-width: 550px;
+        }
+
+        .form-label {
+            color: var(--side-bg);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 20px;
+            border: 2px solid #eee;
+            transition: 0.3s;
+        }
+
+            .form-control:focus {
+                border-color: var(--dusty-accent);
+                box-shadow: 0 0 10px rgba(232, 211, 211, 0.3);
+                outline: none;
+            }
+
+        /* تنسيق زر الحفظ */
+        .btn-save {
+            background-color: var(--side-bg);
+            color: white;
+            border-radius: 50px;
+            padding: 12px 40px;
+            font-weight: 600;
+            border: none;
+            transition: 0.3s;
+        }
+
+            .btn-save:hover {
+                background-color: #313244;
+                transform: translateY(-2px);
+                color: white;
+            }
+
+        .btn-cancel {
+            border-radius: 50px;
+            padding: 12px 40px;
+            color: #888;
+            border: 2px solid #eee;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+            .btn-cancel:hover {
+                background-color: #f8f8f8;
+                color: #555;
+            }
+
+        /* تنسيق الـ Switch (تفعيل القسم) */
+        .form-check-input:checked {
+            background-color: var(--side-bg);
+            border-color: var(--side-bg);
+        }
+
+        .header-icon {
+            width: 70px;
+            height: 70px;
+            background-color: var(--dusty-accent);
+            color: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-card">
+        <div class="header-icon">
+            <i class="bi bi-folder-plus"></i>
+        </div>
+        <h2 class="text-center fw-bold mb-4" style="color: var(--side-bg);">إضافة قسم جديد</h2>
+        <p class="text-center text-muted mb-5 small">أدخل تفاصيل الفئة الجديدة لظهورها في المتجر</p>
+
+        <form id="createForm" asp-action="Create" method="post" enctype="multipart/form-data">
+
+            <div class="mb-4">
+                <label class="form-label">اسم الفئة</label>
+                <input asp-for="Name" class="form-control" placeholder="مثلاً: ملابس صيفية" required />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">صورة الفئة</label>
+                <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+                <div class="form-text mt-2">يفضل استخدام صور عالية الجودة بصيغة PNG أو JPG</div>
+            </div>
+
+            <div class="form-check form-switch mb-5 d-flex align-items-center gap-3">
+                <input asp-for="IsActive" class="form-check-input" type="checkbox" style="width: 3rem; height: 1.5rem;" checked>
+                <label class="form-check-label fw-bold" style="color: var(--side-bg);">تفعيل القسم مباشرة</label>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3">
+                <button type="submit" class="btn btn-save shadow">حفظ القسم</button>
+                <a asp-action="Index" class="btn btn-cancel">إلغاء</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <script>
+        $(document).ready(function () {
+            $('#createForm').on('submit', function (e) {
+                e.preventDefault(); // نوقف الفورم لحظة عشان نطلع الرسالة
+
+                let form = this;
+
+                Swal.fire({
+                    title: 'جاري الحفظ...',
+                    text: 'يرجى الانتظار لحظة واحدة',
+                    icon: 'info',
+                    showConfirmButton: false,
+                    timer: 1500, // رسالة مؤقتة تدي إحساس إن السيستم شغال
+                    timerProgressBar: true,
+                    didClose: () => {
+                        // بعد ما الرسالة تخلص، بنبعت الفورم فعلياً
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                title: 'تم بنجاح!',
+                text: '@TempData["SuccessMessage"]',
+                icon: 'success',
+                confirmButtonText: 'ممتاز',
+                confirmButtonColor: '#40415A'
+            });
+        </script>
+    }
+
+</body>
+</html>

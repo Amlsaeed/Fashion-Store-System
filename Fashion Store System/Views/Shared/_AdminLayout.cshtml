@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --sidebar-bg: #1e1e2d;
+            --sidebar-hover: #2b2b40;
+            --accent-color: #009ef7;
+        }
+
+        body {
+            background-color: #f5f8fa;
+            font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ستايل القائمة الجانبية */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            position: fixed;
+            right: 0;
+            top: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #323248;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            color: #a2a3b7;
+            text-decoration: none;
+            transition: 0.3s;
+            font-size: 1.05rem;
+        }
+
+            .menu-item:hover {
+                background-color: var(--sidebar-hover);
+                color: var(--accent-color);
+            }
+
+            .menu-item i {
+                font-size: 1.3rem;
+                margin-left: 15px;
+            }
+
+        /* محتوى الصفحة الرئيسي */
+        .main-content {
+            margin-right: 260px; /* نفس عرض السايد بار */
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            background: white;
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4 class="text-white fw-bold mb-0">Fashion Store</h4>
+            <span class="text-muted small">Admin Panel</span>
+        </div>
+
+        <div class="sidebar-menu">
+            <a asp-controller="Home" asp-action="Index" class="menu-item">
+                <i class="bi bi-house-door"></i> الرئيسية
+            </a>
+            <a asp-controller="Category" asp-action="Index" class="menu-item">
+                <i class="bi bi-grid-3x3-gap"></i> الأقسام
+            </a>
+            <a asp-controller="Product" asp-action="Index" class="menu-item">
+                <i class="bi bi-box-seam"></i> المنتجات
+            </a>
+
+            <a asp-controller="Suppliers" asp-action="Index" class="menu-item">
+                <i class="bi bi-truck"></i> الموردين
+            </a>
+
+            <a asp-controller="Purchases" asp-action="Index" class="menu-item">
+                <i class="bi bi-cart-check"></i> المشتريات
+            </a>
+            <a asp-controller="PurchaseReturns" asp-action="Index" class="menu-item text-warning-emphasis">
+                <i class="bi bi-arrow-left-right"></i> مرتجع مشتريات
+            </a>
+            <a href="#" class="menu-item">
+                <i class="bi bi-people"></i> الموظفين
+            </a>
+            <a asp-controller="Sales" asp-action="Index" class="menu-item">
+                <i class="bi bi-receipt"></i> المبيعات
+            </a>
+            <a asp-controller="SalesReturns" asp-action="Index" class="menu-item text-warning-emphasis">
+                <i class="bi bi-arrow-counterclockwise"></i> مرتجع مبيعات
+            </a>
+            <a href="#" class="menu-item text-danger mt-5">
+                <i class="bi bi-box-arrow-right"></i> تسجيل الخروج
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-nav d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark text-primary">لوحة التحكم</h5>
+            <div class="user-info d-flex align-items-center">
+                <span class="ms-2 fw-semibold">أهلاً، أدمن</span>
+                <i class="bi bi-person-circle fs-4 text-primary"></i>
+            </div>
+        </div>
+
+        @RenderBody()
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

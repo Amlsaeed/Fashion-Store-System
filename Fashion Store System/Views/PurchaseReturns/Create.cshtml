@@ -1,0 +1,121 @@
+﻿@model Fashion_Store_System.Models.SalesReturn
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background: #FFF5E1;
+            padding: 30px;
+        }
+
+        .smart-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            border-top: 8px solid #FF8C00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container smart-card shadow">
+        <h3 class="fw-bold mb-4" style="color: #FF8C00;">مرتجع مبيعات ذكي</h3>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <label class="fw-bold">ادخلي رقم فاتورة البيع:</label>
+                <div class="input-group">
+                    <input type="number" id="invoiceIdInput" class="form-control" placeholder="مثلاً: 10">
+                    <button type="button" class="btn btn-warning" onclick="loadInvoice()">بحث</button>
+                </div>
+            </div>
+        </div>
+
+        <form asp-action="Create">
+            <input type="hidden" asp-for="SalesInvoiceId" id="hiddenInvoiceId" />
+
+            <table class="table table-hover" id="itemsTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>المنتج</th>
+                        <th>الكمية المباعة</th>
+                        <th>الكمية المرتجعة</th>
+                        <th>سعر البيع الأصلي</th>
+                        <th>الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between mt-4">
+                <h4 class="fw-bold">إجمالي المرتجع: <span id="grandTotal">0</span> ج.م</h4>
+                <button type="submit" class="btn btn-success px-5">تأكيد المرتجع</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function loadInvoice() {
+            let id = $('#invoiceIdInput').val();
+            if (!id) return alert("من فضلك ادخلي رقم الفاتورة أولاً");
+
+            $.get('/SalesReturns/GetInvoiceDetails?invoiceId=' + id, function(data) {
+                if (data.length == 0) {
+                    alert("الفاتورة غير موجودة أو لا تحتوي على أصناف!");
+                    return;
+                }
+
+                $('#hiddenInvoiceId').val(id); // ربط المرتجع بالفاتورة
+                let rows = '';
+                data.forEach((item, i) => {
+                    rows += `
+                    <tr>
+                        <td>
+                            <input type="hidden" name="Items[${i}].ProductId" value="${item.productId}">
+                            ${item.productName}
+                        </td>
+                        <td class="text-muted">${item.quantitySold}</td>
+                        <td>
+                            <input type="number" name="Items[${i}].Quantity" class="form-control qty-input"
+                                   max="${item.quantitySold}" min="0" value="0"
+                                   oninput="updateRowTotal(this, ${item.unitPrice})">
+                        </td>
+                        <td>
+                            <input type="hidden" name="Items[${i}].UnitPrice" value="${item.unitPrice}">
+                            ${item.unitPrice} ج.م
+                        </td>
+                        <td class="row-total fw-bold text-danger">0</td>
+                    </tr>`;
+                });
+                $('#itemsTable tbody').html(rows);
+            });
+        }
+
+        function updateRowTotal(input, price) {
+            let qty = $(input).val();
+            let max = parseInt($(input).attr('max'));
+
+            if (qty > max) {
+                alert("لا يمكن إرجاع كمية أكبر من المباعة!");
+                $(input).val(max);
+                qty = max;
+            }
+
+            let total = qty * price;
+            $(input).closest('tr').find('.row-total').text(total);
+
+            // تحديث الإجمالي الكلي
+            let grandTotal = 0;
+            $('.row-total').each(function() {
+                grandTotal += parseFloat($(this).text());
+            });
+            $('#grandTotal').text(grandTotal);
+        }
+    </script>
+</body>
+</html>

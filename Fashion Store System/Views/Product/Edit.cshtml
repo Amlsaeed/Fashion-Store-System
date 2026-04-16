@@ -1,0 +1,50 @@
+﻿@model Fashion_Store_System.ViewModels.ProductVM.ProductVM
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <style>
+        body {
+            background: #F8EDED;
+            padding: 40px;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 900px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-card">
+        <h3 class="mb-4 text-center">تعديل المنتج</h3>
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3"><label>الاسم</label><input asp-for="Name" class="form-control"></div>
+                    <div class="row">
+                        <div class="col-6 mb-3"><label>السعر</label><input asp-for="Price" class="form-control"></div>
+                        <div class="col-6 mb-3"><label>الكمية</label><input asp-for="Quantity" class="form-control"></div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <img src="@ViewBag.CurrentImageUrl" style="width: 150px; border-radius: 10px; margin-bottom: 10px;">
+                    <label class="d-block">تغيير الصورة</label>
+                    <input asp-for="ImageFile" type="file" class="form-control mt-1">
+                    <select asp-for="CategoryId" class="form-select mt-3" asp-items="ViewBag.CategoryList"></select>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary w-100">حفظ التغييرات</button>
+                <a asp-action="Index" class="btn btn-secondary w-100">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

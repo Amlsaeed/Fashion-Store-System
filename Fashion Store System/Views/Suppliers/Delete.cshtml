@@ -1,0 +1,85 @@
+﻿@model Fashion_Store_System.Models.Supplier
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>تأكيد حذف المورد</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #F8EDED;
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .warning-icon {
+            font-size: 4rem;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50px;
+            padding: 10px 30px;
+            border: none;
+            font-weight: bold;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            border-radius: 50px;
+            padding: 10px 30px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="delete-card shadow-lg">
+        <div class="warning-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+
+        <h3 class="fw-bold mb-3" style="color: #40415A;">تأكيد الحذف</h3>
+        <p class="text-muted mb-4">
+            هل أنتِ متأكدة من حذف المورد <br />
+            <strong class="text-dark fs-5">"@Model.Name"</strong>؟ <br />
+            هذا الإجراء قد يؤثر على فواتير المشتريات المرتبطة به.
+        </p>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="Id" />
+
+            <div class="d-flex justify-content-center gap-3">
+                <button type="submit" class="btn btn-delete shadow-sm">تأكيد الحذف النهائي</button>
+                <a asp-action="Index" class="btn btn-cancel shadow-sm">تراجع</a>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

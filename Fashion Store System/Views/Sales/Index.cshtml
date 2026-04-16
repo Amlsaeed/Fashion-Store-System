@@ -1,0 +1,81 @@
+﻿@model IEnumerable<Fashion_Store_System.Models.SalesInvoice>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: #E7F0DC;
+            padding: 20px;
+            font-family: 'Segoe UI';
+        }
+
+        .sales-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .text-sales {
+            color: #2D5A27;
+        }
+
+        .btn-sales {
+            background: #2D5A27;
+            color: white;
+            border-radius: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between mb-4">
+            <h2 class="fw-bold text-sales"><i class="bi bi-receipt-cutoff"></i> سجل المبيعات</h2>
+            <a asp-action="Create" class="btn btn-sales px-4">عملية بيع جديدة</a>
+        </div>
+
+        <div class="sales-card">
+            <table class="table table-hover text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم الفاتورة</th>
+                        <th>التاريخ</th>
+                        <th>اسم العميل</th>
+                        <th>الإجمالي</th>
+                        <th>العمليات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>#@item.Id</td>
+                            <td>@item.SalesDate.ToShortDateString()</td>
+                            <td>@(string.IsNullOrEmpty(item.CustomerName) ? "عميل نقدي" : item.CustomerName)</td>
+                            <td class="fw-bold text-success">@item.TotalAmount.ToString("N0") ج.م</td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                                <button onclick="confirmDelete(@item.Id)" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmDelete(id) {
+            Swal.fire({ title: 'حذف عملية البيع؟', text: "سيتم إعادة الكميات للمخزن!", icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، احذف' })
+            .then((result) => { if (result.isConfirmed) $.post('/Sales/Delete/' + id, () => location.reload()); });
+        }
+    </script>
+</body>
+</html>

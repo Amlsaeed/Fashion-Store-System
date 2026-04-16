@@ -1,0 +1,200 @@
+﻿@model Fashion_Store_System.ViewModels.CategoryVM.CategoryVM
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>تعديل القسم</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --side-bg: #40415A; /* الرمادي المزرق */
+            --pale-bg: #F8EDED; /* البيج الوردي */
+            --dusty-accent: #E8D3D3; /* الوردي البودرة */
+        }
+
+        body {
+            background-color: var(--pale-bg);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 20px 0;
+        }
+
+        .edit-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 600px;
+            border: none;
+        }
+
+        .header-icon {
+            width: 70px;
+            height: 70px;
+            background-color: var(--side-bg);
+            color: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 20px;
+        }
+
+        .form-label {
+            color: var(--side-bg);
+            font-weight: 600;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px;
+            border: 2px solid #eee;
+        }
+
+            .form-control:focus {
+                border-color: var(--dusty-accent);
+                box-shadow: 0 0 10px rgba(232, 211, 211, 0.3);
+            }
+
+        .current-img-container {
+            border: 2px dashed var(--dusty-accent);
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            background-color: #fafafa;
+        }
+
+        .btn-update {
+            background-color: var(--side-bg);
+            color: white;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 600;
+            border: none;
+            transition: 0.3s;
+        }
+
+            .btn-update:hover {
+                background-color: #313244;
+                transform: translateY(-2px);
+                color: white;
+            }
+
+        .btn-back {
+            border-radius: 50px;
+            padding: 12px 30px;
+            color: #888;
+            border: 2px solid #eee;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--side-bg);
+            border-color: var(--side-bg);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="edit-card">
+        <div class="header-icon">
+            <i class="bi bi-pencil-square"></i>
+        </div>
+        <h2 class="text-center fw-bold mb-2" style="color: var(--side-bg);">تعديل القسم</h2>
+        <p class="text-center text-muted mb-4 small">تحديث بيانات الفئة #@Model.Name</p>
+
+        <form id="editForm" asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @* <input type="hidden" asp-for="Id" /> *@
+
+            <div class="mb-4">
+                <label class="form-label">الاسم الجديد</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label d-block">الصورة الحالية</label>
+                <div class="current-img-container">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" class="rounded shadow-sm" style="max-height: 120px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <span class="text-muted small italic">لا توجد صورة حالية</span>
+                    }
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">تغيير الصورة</label>
+                <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+            </div>
+
+            <div class="form-check form-switch mb-5 d-flex align-items-center gap-3">
+                <input asp-for="IsActive" class="form-check-input" type="checkbox" style="width: 3rem; height: 1.5rem;">
+                <label class="form-check-label fw-bold" style="color: var(--side-bg);">القسم نشط في المتجر</label>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row gap-2">
+                <button type="submit" class="btn btn-update flex-grow-1">حفظ التغييرات</button>
+                <a asp-action="Index" class="btn btn-back flex-grow-1">إلغاء والعودة</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#editForm').on('submit', function (e) {
+                e.preventDefault();
+                let form = this;
+
+                Swal.fire({
+                    title: 'تحديث البيانات...',
+                    text: 'جاري حفظ التعديلات الجديدة',
+                    icon: 'info',
+                    showConfirmButton: false,
+                    timer: 1200,
+                    timerProgressBar: true,
+                    didClose: () => {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+
+    @if (TempData["UpdateMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                title: 'تم التعديل!',
+                text: '@TempData["UpdateMessage"]',
+                icon: 'success',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#40415A'
+            });
+        </script>
+    }
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+﻿@{
+    Layout = "_AdminLayout";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --side-bg: #40415A; /* الرمادي المزرق الغامق - من السايد بار */
+        --pale-bg: #F8EDED; /* البيج الوردي الفاتح جداً - الخلفية */
+        --dusty-accent: #E8D3D3; /* الوردي البودرة الباهت - اللمسات والأيقونات */
+        --main-text: #2c2c3e; /* لون نص غامق متناسق */
+    }
+
+    body {
+        background-color: var(--pale-bg);
+        font-family: 'Segoe UI', sans-serif;
+        color: var(--main-text);
+        margin: 0;
+        overflow-x: hidden;
+    }
+
+    /* كارت الهيدر (صورة الفاشون) */
+    .hero-card {
+        background: url('https://images.unsplash.com/photo-1441997641577-451343a1185a?q=80&w=2070&auto=format&fit=crop') center/cover;
+        border-radius: 0 0 40px 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        height: 400px;
+        margin-bottom: 50px;
+    }
+
+    .hero-content {
+        height: 100%;
+        padding: 60px;
+        color: white;
+        background: linear-gradient(90deg, rgba(64,65,90, 0.7) 0%, rgba(64,65,90, 0.1) 100%);
+        border-radius: 0 0 40px 40px;
+    }
+
+    .hero-tag {
+        background-color: white;
+        color: #222;
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* كروت الإحصائيات (الطايرة) */
+    .stat-card {
+        background-color: white;
+        border-radius: 18px;
+        padding: 30px;
+        border: none;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+        transition: all 0.3s ease;
+        h-100;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.07);
+        }
+
+    .stat-icon {
+        background-color: var(--dusty-accent);
+        color: white;
+        width: 65px;
+        height: 65px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 20px;
+        font-size: 1.8rem;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 0;
+    }
+
+    .stat-label {
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #888;
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+    }
+
+    /* أزرار مخصصة متناسقة مع الألوان */
+    .btn-side-accent {
+        background-color: var(--side-bg);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        border: none;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+        .btn-side-accent:hover {
+            background-color: #313244; /* لدرجة أغمق قليلاً */
+            color: white;
+        }
+
+    .btn-light-dust {
+        background-color: var(--dusty-accent);
+        color: #666;
+        padding: 12px 30px;
+        border-radius: 50px;
+        border: none;
+        font-weight: bold;
+    }
+</style>
+
+<div class="main-body">
+    <div class="hero-card position-relative animate__animated animate__fadeInDown">
+        <div class="hero-content d-flex align-items-center">
+            <div>
+                <span class="hero-tag">جديد الموسم</span>
+                <h1 class="display-3 fw-bold mb-3" style="letter-spacing: -2px;">لوحة إدارة <br> فاشون ستور</h1>
+                <p class="fs-4 fw-light opacity-80 mb-5">تحكم في متجرك بكل أناقة وبساطة من مكان واحد.</p>
+                <div class="d-flex gap-3">
+                    <a asp-controller="Category" asp-action="Index" class="btn btn-side-accent btn-lg px-5 shadow-lg">إدارة الأقسام</a>
+                    <button class="btn btn-light-dust btn-lg px-5">المبيعات اليومية</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid py-4">
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon">
+                            <i class="bi bi-tag"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label">إجمالي الفئات</p>
+                            <h3 class="stat-value">34</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label">المنتجات النشطة</p>
+                            <h3 class="stat-value">1,540</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon">
+                            <i class="bi bi-cart-check"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label">المبيعات اليومية</p>
+                            <h3 class="stat-value">89</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label">إجمالي الأرباح</p>
+                            <h3 class="stat-value">$12.4K</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fw-light italic fs-5">"الأناقة ليست فقط فيما ترتديه، بل في كيفية إدارتك لعملك"</p>
+                <small class="text-muted">© 2026 Fashion Store System</small>
+            </div>
+        </div>
+    </div>
+</div>

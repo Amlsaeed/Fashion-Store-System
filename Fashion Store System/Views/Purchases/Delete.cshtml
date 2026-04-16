@@ -1,0 +1,115 @@
+﻿@model Fashion_Store_System.Models.PurchaseInvoice
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>تأكيد حذف الفاتورة</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #F8EDED;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .delete-card {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 550px;
+            width: 100%;
+            border: 1px solid #ffcfcf;
+        }
+
+        .warning-zone {
+            background-color: #fff5f5;
+            border-radius: 15px;
+            padding: 20px;
+            border-right: 5px solid #dc3545;
+            margin-bottom: 25px;
+        }
+
+        .btn-confirm {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50px;
+            padding: 12px 30px;
+            border: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+            .btn-confirm:hover {
+                background-color: #a71d2a;
+                transform: scale(1.05);
+            }
+
+        .btn-back {
+            background-color: #f8f9fa;
+            color: #666;
+            border-radius: 50px;
+            padding: 12px 30px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="delete-card shadow-lg text-center">
+        <div class="mb-4">
+            <i class="bi bi-exclamation-octagon-fill text-danger" style="font-size: 4rem;"></i>
+        </div>
+
+        <h3 class="fw-bold mb-3" style="color: #40415A;">تأكيد حذف فاتورة مشتريات</h3>
+
+        <div class="warning-zone text-end">
+            <p class="mb-1 text-danger fw-bold"><i class="bi bi-info-circle me-1"></i> تنبيه هام جداً:</p>
+            <p class="text-muted small mb-0">
+                عند حذف هذه الفاتورة (رقم #@Model.Id)، سيقوم النظام تلقائياً بخصم كميات الأصناف الموجودة بها من المخزن الحالي لضمان دقة الجرد.
+            </p>
+        </div>
+
+        <div class="mb-4 text-end">
+            <ul class="list-group list-group-flush small">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">المورد:</span>
+                    <span class="fw-bold">@Model.Supplier?.Name</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">إجمالي المبلغ:</span>
+                    <span class="fw-bold text-danger">@Model.TotalAmount.ToString("N0") ج.م</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">عدد الأصناف:</span>
+                    <span class="fw-bold">@Model.PurchaseItems.Count</span>
+                </li>
+            </ul>
+        </div>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="Id" />
+
+            <div class="d-grid gap-2 d-md-flex justify-content-center">
+                <button type="submit" class="btn btn-confirm">
+                    <i class="bi bi-trash3 me-1"></i> نعم، احذف الفاتورة وعدّل المخزن
+                </button>
+                <a asp-action="Index" class="btn btn-back">
+                    إلغاء وتراجع
+                </a>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

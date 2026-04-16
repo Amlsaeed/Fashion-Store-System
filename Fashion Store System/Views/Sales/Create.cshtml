@@ -1,0 +1,123 @@
+﻿@model Fashion_Store_System.Models.SalesInvoice
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <style>
+        body {
+            background: #E7F0DC;
+            padding: 30px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .create-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .grand-total {
+            background: #2D5A27;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .text-sales {
+            color: #2D5A27;
+        }
+    </style>
+</head>
+<body>
+    <div class="container create-card shadow">
+        <h3 class="fw-bold mb-4 text-sales">فاتورة بيع جديدة</h3>
+        <form asp-action="Create" id="salesForm">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="fw-bold">اسم العميل (اختياري)</label>
+                    <input asp-for="CustomerName" class="form-control" placeholder="مثلاً: عميل نقدي">
+                </div>
+            </div>
+
+            <table class="table" id="itemsTable">
+                <thead class="bg-success text-white">
+                    <tr>
+                        <th>المنتج</th>
+                        <th style="width: 15%;">الكمية</th>
+                        <th style="width: 20%;">سعر البيع</th>
+                        <th style="width: 20%;">الإجمالي</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button type="button" class="btn btn-outline-success mb-4 w-100 fw-bold" onclick="addRow()">+ إضافة صنف للفاتورة</button>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="grand-total">الإجمالي النهائي: <span id="grandTotal">0</span> ج.م</div>
+                <button type="submit" class="btn btn-success px-5 rounded-pill fw-bold">إتمام عملية البيع</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let rowIndex = 0;
+
+        function addRow() {
+            // لاحظي هنا ضفنا data-price عشان نشيل فيها السعر
+            let row = `
+                <tr id="row-${rowIndex}">
+                    <td>
+                        <select name="Items[${rowIndex}].ProductId" class="form-select product-select" onchange="updatePrice(${rowIndex})" required>
+                            <option value="" data-price="0">-- اختر المنتج --</option>
+                            @foreach (var p in ViewBag.Products)
+                            {
+                                    <option value="@p.Id" data-price="@p.Price">@p.Name (متاح: @p.Quantity)</option>
+                            }
+                        </select>
+                    </td>
+                    <td><input type="number" name="Items[${rowIndex}].Quantity" class="form-control qty" oninput="calc(${rowIndex})" required min="1" value="1"></td>
+                    <td><input type="number" name="Items[${rowIndex}].UnitPrice" class="form-control price" oninput="calc(${rowIndex})" required readonly></td>
+                    <td><span class="row-total fw-bold text-success">0</span> ج.م</td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); updateTotal();">X</button></td>
+                </tr>`;
+            document.querySelector('#itemsTable tbody').insertAdjacentHTML('beforeend', row);
+            rowIndex++;
+        }
+
+        // دالة لجلب السعر فور اختيار المنتج
+        function updatePrice(i) {
+            let row = document.getElementById(`row-${i}`);
+            let select = row.querySelector('.product-select');
+            // بنجيب السعر من الـ data-price بتاع الـ option المختار
+            let price = select.options[select.selectedIndex].getAttribute('data-price');
+
+            row.querySelector('.price').value = price;
+            calc(i); // احسب الإجمالي فوراً
+        }
+
+        function calc(i) {
+            let r = document.getElementById(`row-${i}`);
+            let qty = r.querySelector('.qty').value || 0;
+            let price = r.querySelector('.price').value || 0;
+            let total = qty * price;
+
+            r.querySelector('.row-total').innerText = total.toLocaleString();
+            updateTotal();
+        }
+
+        function updateTotal() {
+            let total = 0;
+            document.querySelectorAll('.row-total').forEach(el => {
+                total += parseFloat(el.innerText.replace(/,/g, '')) || 0;
+            });
+            document.getElementById('grandTotal').innerText = total.toLocaleString();
+        }
+
+        window.onload = addRow;
+    </script>
+</body>
+</html>

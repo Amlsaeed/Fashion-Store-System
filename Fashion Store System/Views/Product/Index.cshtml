@@ -1,0 +1,220 @@
+﻿@model IEnumerable<Fashion_Store_System.ViewModels.ProductVM.ProductVMDt>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>إدارة المخزن والتقارير</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --side-bg: #40415A;
+            --pale-bg: #F8EDED;
+            --success-color: #27ae60;
+        }
+
+        body {
+            background-color: var(--pale-bg);
+            font-family: 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+
+        /* الكروت */
+        .stat-card {
+            cursor: pointer;
+            border-radius: 15px;
+            border: none;
+            transition: 0.3s;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+            }
+
+        /* الجدول */
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        th {
+            background-color: #f8f9fa !important;
+            color: var(--side-bg);
+            text-align: center !important;
+            vertical-align: middle;
+        }
+
+        td {
+            text-align: center !important;
+            vertical-align: middle !important;
+            white-space: nowrap;
+        }
+
+        .product-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .stock-critical {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .dt-buttons {
+            margin-bottom: 15px;
+            gap: 8px;
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold" style="color: var(--side-bg);">لوحة تحكم المنتجات والتقارير</h2>
+            <a asp-action="Create" class="btn btn-dark rounded-pill px-4 shadow-sm"><i class="bi bi-plus-lg me-1"></i> إضافة منتج</a>
+        </div>
+
+        <div class="row mb-4 g-3">
+            <div class="col-md-3" onclick="filterTable('')">
+                <div class="card stat-card shadow-sm bg-dark text-white p-3 h-100">
+                    <div class="d-flex justify-content-between">
+                        <div><h6>إجمالي الأصناف</h6><h2 class="fw-bold">@ViewBag.TotalProducts</h2></div>
+                        <i class="bi bi-collection fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3" onclick="filterTable('قليل')">
+                <div class="card stat-card shadow-sm bg-white text-danger p-3 h-100" style="border-right: 5px solid #dc3545;">
+                    <div class="d-flex justify-content-between">
+                        <div><h6>النواقص (أقل من 5)</h6><h2 class="fw-bold">@ViewBag.LowStockCount</h2></div>
+                        <i class="bi bi-exclamation-circle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card shadow-sm bg-white text-primary p-3 h-100">
+                    <div class="d-flex justify-content-between">
+                        <div><h6>إجمالي القطع</h6><h2 class="fw-bold">@ViewBag.TotalQuantity</h2></div>
+                        <i class="bi bi-box-seam fs-1 opacity-25"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card shadow-sm bg-white text-success p-3 h-100">
+                    <div class="d-flex justify-content-between">
+                        <div><h6>قيمة المخزن</h6><h2 class="fw-bold">@ViewBag.TotalValue.ToString("N0")</h2></div>
+                        <i class="bi bi-cash-stack fs-1 opacity-25"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-card">
+            <table id="productsTable" class="table table-hover w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>الصورة</th>
+                        <th>المنتج</th>
+                        <th>القسم</th>
+                        <th>السعر</th>
+                        <th>الكمية</th>
+                        <th>الخصم</th>
+                        <th>الحالة</th>
+                        <th>العمليات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-muted">@item.Id</td>
+                            <td><img src="@item.ImageUrl" class="product-img" onerror="this.src='/Images/default.png'"></td>
+                            <td class="fw-bold">@item.Name</td>
+                            <td><span class="badge bg-light text-dark border">@item.CategoryName</span></td>
+                            <td class="text-success fw-bold">@item.Price.ToString("N0") ج.م</td>
+                            <td>
+                                @if (item.Quantity <= 5)
+                                {
+                                    <span class="stock-critical">@item.Quantity (قليل!)</span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-dark">@item.Quantity</span>
+                                }
+                            </td>
+                            <td>@(item.Discount > 0 ? item.Discount + "%" : "-")</td>
+                            <td><span class="badge @(item.IsActive ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger") rounded-pill">@(item.IsActive ? "نشط" : "مخفي")</span></td>
+                            <td>
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0"><i class="bi bi-pencil-square"></i></a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info border-0"><i class="bi bi-eye"></i></a>
+                                    <button onclick="confirmDelete(@item.Id)" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        var table;
+        $(document).ready(function() {
+            table = $('#productsTable').DataTable({
+                language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/ar.json' },
+                dom: 'Bfrtip',
+                buttons: [
+                    { extend: 'print', text: '<i class="bi bi-printer"></i> طباعة التقرير', className: 'btn btn-dark btn-sm rounded-pill px-3', exportOptions: { columns: [0, 2, 3, 4, 5] } },
+                    { extend: 'excel', text: '<i class="bi bi-file-earmark-excel"></i> Excel', className: 'btn btn-success btn-sm rounded-pill px-3' }
+                ]
+            });
+        });
+
+        function filterTable(q) { table.search(q).draw(); }
+
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'حذف المنتج؟',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'نعم، احذف',
+                cancelButtonText: 'تراجع'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Product/Delete/' + id, function(res) {
+                        if(res.success) { location.reload(); }
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

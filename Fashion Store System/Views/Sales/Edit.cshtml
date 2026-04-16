@@ -1,0 +1,98 @@
+﻿@model Fashion_Store_System.Models.SalesInvoice
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <style>
+        body {
+            background: #E7F0DC;
+            padding: 30px;
+        }
+
+        .edit-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            border-top: 5px solid #198754;
+        }
+    </style>
+</head>
+<body>
+    <div class="container edit-card shadow">
+        <h3 class="fw-bold mb-4 text-success">تعديل فاتورة مبيعات #@Model.Id</h3>
+        <form asp-action="Edit">
+            <input type="hidden" asp-for="Id" />
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="fw-bold mb-2">اسم العميل</label>
+                    <input asp-for="CustomerName" class="form-control shadow-sm">
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold mb-2">تاريخ الفاتورة</label>
+                    <input asp-for="SalesDate" class="form-control shadow-sm" readonly>
+                </div>
+            </div>
+
+            <table class="table table-bordered align-middle" id="itemsTable">
+                <thead class="table-success">
+                    <tr>
+                        <th>المنتج</th>
+                        <th style="width: 15%;">الكمية</th>
+                        <th style="width: 20%;">سعر البيع</th>
+                        <th style="width: 20%;">الإجمالي</th>
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.SalesItems.Count; i++)
+                    {
+                        <tr id="row-@i">
+                            <td>
+                                <select name="Items[@i].ProductId" class="form-select">
+                                    @foreach (var p in ViewBag.Products)
+                                    {
+                                        <option value="@p.Id" selected="@(p.Id == Model.SalesItems.ElementAt(i).ProductId)">@p.Name</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input type="number" name="Items[@i].Quantity" class="form-control qty" value="@Model.SalesItems.ElementAt(i).Quantity" oninput="calc(@i)"></td>
+                            <td><input type="number" name="Items[@i].UnitPrice" class="form-control price" value="@Model.SalesItems.ElementAt(i).UnitPrice" oninput="calc(@i)"></td>
+                            <td><span class="row-total">@((Model.SalesItems.ElementAt(i).Quantity * Model.SalesItems.ElementAt(i).UnitPrice).ToString("N0"))</span> ج.م</td>
+                            <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="this.closest('tr').remove(); updateTotal();">X</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <h4 class="fw-bold">الإجمالي الجديد: <span id="grandTotal" class="text-success">@Model.TotalAmount.ToString("N0")</span> ج.م</h4>
+                <div>
+                    <a asp-action="Index" class="btn btn-light rounded-pill px-4 me-2">إلغاء</a>
+                    <button type="submit" class="btn btn-success rounded-pill px-5">حفظ التعديلات</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function calc(i) {
+            let r = document.getElementById(`row-${i}`);
+            let q = r.querySelector('.qty').value || 0;
+            let p = r.querySelector('.price').value || 0;
+            r.querySelector('.row-total').innerText = (q * p).toLocaleString();
+            updateTotal();
+        }
+        function updateTotal() {
+            let total = 0;
+            document.querySelectorAll('.row-total').forEach(el => {
+                total += parseFloat(el.innerText.replace(/,/g, '')) || 0;
+            });
+            document.getElementById('grandTotal').innerText = total.toLocaleString();
+        }
+    </script>
+</body>
+</html>

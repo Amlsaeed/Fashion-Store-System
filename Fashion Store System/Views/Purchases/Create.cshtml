@@ -1,0 +1,205 @@
+﻿@model Fashion_Store_System.Models.PurchaseInvoice
+@{
+    Layout = null; // أو Layout = "_Layout"; حسب نظامك
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>إنشاء فاتورة مشتريات</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --main-color: #40415A;
+            --bg-color: #F8EDED;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+
+        .purchase-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: none;
+        }
+
+        .table thead {
+            background-color: var(--main-color);
+            color: white;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        .btn-add-row {
+            background-color: #f8f9fa;
+            border: 2px dashed #ddd;
+            color: #666;
+            width: 100%;
+            border-radius: 10px;
+            padding: 10px;
+            transition: 0.3s;
+        }
+
+            .btn-add-row:hover {
+                background-color: #e9ecef;
+                border-color: var(--main-color);
+                color: var(--main-color);
+            }
+
+        .grand-total-box {
+            background: var(--main-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="purchase-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold" style="color: var(--main-color);">
+                    <i class="bi bi-cart-plus-fill me-2"></i> فاتورة مشتريات جديدة
+                </h2>
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">رجوع للسجل</a>
+            </div>
+
+            <form asp-controller="Purchases" asp-action="Create" id="purchaseForm">
+                @Html.AntiForgeryToken()
+
+                <div class="row mb-4 g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">المورد</label>
+                        <select asp-for="SupplierId" class="form-select shadow-sm" required>
+                            <option value="">-- اختر المورد --</option>
+                            @foreach (var s in ViewBag.Suppliers)
+                            {
+                                <option value="@s.Id">@s.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">تاريخ الفاتورة</label>
+                        <input type="date" class="form-control shadow-sm" value="@DateTime.Now.ToString("yyyy-MM-dd")" readonly />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">ملاحظات</label>
+                        <input asp-for="Notes" class="form-control shadow-sm" placeholder="مثلاً: دفعة أولى / استلام مخزن" />
+                    </div>
+                </div>
+
+                <hr>
+
+                <h5 class="fw-bold mb-3"><i class="bi bi-list-ul me-2"></i> أصناف الفاتورة</h5>
+                <table class="table table-hover align-middle" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">المنتج</th>
+                            <th style="width: 20%;">الكمية</th>
+                            <th style="width: 20%;">سعر الشراء (للقطعة)</th>
+                            <th style="width: 20%;">الإجمالي</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+
+                <button type="button" class="btn btn-add-row mb-4" onclick="addRow()">
+                    <i class="bi bi-plus-lg"></i> إضافة صنف جديد للفاتورة
+                </button>
+
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="grand-total-box shadow">
+                        <span class="fs-5">إجمالي الفاتورة: </span>
+                        <span id="grandTotal" class="fs-3 fw-bold">0</span> <small>ج.م</small>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg px-5 rounded-pill shadow">
+                        <i class="bi bi-check2-all me-1"></i> حفظ وتحديث المخزن
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let rowIndex = 0;
+
+        // وظيفة إضافة سطر جديد
+        function addRow() {
+            let tableBody = document.querySelector('#itemsTable tbody');
+            let row = `
+                <tr id="row-${rowIndex}">
+                    <td>
+                        <select name="Items[${rowIndex}].ProductId" class="form-select shadow-sm" required>
+                            <option value="">-- اختر المنتج --</option>
+                            @foreach (var p in ViewBag.Products)
+                            {
+                                    <option value="@p.Id">@p.Name</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${rowIndex}].Quantity" class="form-control qty shadow-sm" oninput="calculateRow(${rowIndex})" required min="1" placeholder="0">
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${rowIndex}].UnitPrice" class="form-control price shadow-sm" oninput="calculateRow(${rowIndex})" required step="0.01" placeholder="0.00">
+                    </td>
+                    <td>
+                        <span class="row-total fw-bold text-dark">0.00</span> ج.م
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-outline-danger border-0" onclick="removeRow(${rowIndex})">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', row);
+            rowIndex++;
+        }
+
+        // حساب إجمالي السطر الواحد
+        function calculateRow(index) {
+            let row = document.getElementById(`row-${index}`);
+            let qty = parseFloat(row.querySelector('.qty').value) || 0;
+            let price = parseFloat(row.querySelector('.price').value) || 0;
+            let total = qty * price;
+            row.querySelector('.row-total').innerText = total.toFixed(2);
+            updateGrandTotal();
+        }
+
+        // حساب إجمالي الفاتورة ككل
+        function updateGrandTotal() {
+            let grandTotal = 0;
+            document.querySelectorAll('.row-total').forEach(el => {
+                grandTotal += parseFloat(el.innerText) || 0;
+            });
+            document.getElementById('grandTotal').innerText = grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        }
+
+        // حذف سطر
+        function removeRow(index) {
+            document.getElementById(`row-${index}`).remove();
+            updateGrandTotal();
+        }
+
+        // إضافة أول سطر تلقائياً عند فتح الصفحة
+        window.onload = addRow;
+    </script>
+
+</body>
+</html>
