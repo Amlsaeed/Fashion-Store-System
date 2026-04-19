@@ -5,46 +5,161 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <meta charset="UTF-8">
+    <title>تعديل المنتج | @Model.Name</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         body {
             background: #F8EDED;
             padding: 40px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .form-card {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 900px;
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 950px;
             margin: auto;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
         }
+
+        .section-title {
+            color: #40415A;
+            font-weight: bold;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* تنسيق زرار الـ Toggle (Switch) */
+        .custom-switch .form-check-input {
+            width: 3.5em;
+            height: 1.7em;
+            cursor: pointer;
+        }
+
+            .custom-switch .form-check-input:checked {
+                background-color: #27ae60;
+                border-color: #27ae60;
+            }
+
+            .custom-switch .form-check-input:not(:checked) {
+                background-color: #d9534f;
+                border-color: #d9534f;
+            }
     </style>
 </head>
 <body>
+
     <div class="form-card">
-        <h3 class="mb-4 text-center">تعديل المنتج</h3>
+        <h3 class="text-center mb-4 fw-bold" style="color: #40415A;">
+            <i class="bi bi-pencil-square me-2"></i>تعديل بيانات المنتج
+        </h3>
+
         <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @* لا تنسي الـ Hidden ID عشان الـ Post يعرف بيعدل أنهي منتج *@
+            <input type="hidden" asp-for="Id" />
+
             <div class="row">
                 <div class="col-md-8">
-                    <div class="mb-3"><label>الاسم</label><input asp-for="Name" class="form-control"></div>
+                    <h5 class="section-title">المعلومات الأساسية</h5>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold">اسم المنتج</label>
+                        <input asp-for="Name" class="form-control form-control-lg">
+                    </div>
+
                     <div class="row">
-                        <div class="col-6 mb-3"><label>السعر</label><input asp-for="Price" class="form-control"></div>
-                        <div class="col-6 mb-3"><label>الكمية</label><input asp-for="Quantity" class="form-control"></div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Price" class="fw-bold">السعر</label>
+                            <div class="input-group">
+                                <input asp-for="Price" class="form-control">
+                                <span class="input-group-text">ج.م</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Discount" class="fw-bold">الخصم (%)</label>
+                            <div class="input-group">
+                                <input asp-for="Discount" class="form-control">
+                                <span class="input-group-text bg-danger text-white border-0">%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="fw-bold">القسم</label>
+                            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryList"></select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="fw-bold">وصف المنتج</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3 p-3 rounded-3" style="background: #fcfcfc; border: 1px solid #eee;">
+                        <label class="fw-bold d-block mb-2">حالة العرض في المتجر</label>
+                        <div class="form-check form-switch custom-switch d-flex align-items-center gap-3">
+                            <input class="form-check-input" type="checkbox" asp-for="IsActive" id="IsActiveSwitch">
+                            <label class="form-check-label fw-bold" for="IsActiveSwitch" id="statusLabel">
+                                @(Model.IsActive ? "المنتج نشط الآن" : "المنتج مخفي حالياً")
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 text-center">
-                    <img src="@ViewBag.CurrentImageUrl" style="width: 150px; border-radius: 10px; margin-bottom: 10px;">
-                    <label class="d-block">تغيير الصورة</label>
-                    <input asp-for="ImageFile" type="file" class="form-control mt-1">
-                    <select asp-for="CategoryId" class="form-select mt-3" asp-items="ViewBag.CategoryList"></select>
+
+                <div class="col-md-4 text-center border-start ps-4">
+                    <h5 class="section-title">صورة المنتج</h5>
+                    <div class="mb-3">
+                        <img src="/images/Products/@ViewBag.CurrentImageUrl"
+                             id="imgPreview"
+                             style="width: 100%; max-width: 200px; border-radius: 15px; border: 3px solid #fff;"
+                             class="shadow-sm mb-3">
+
+                        <label class="btn btn-outline-dark btn-sm d-block w-100 mb-2">
+                            <i class="bi bi-upload me-1"></i> تغيير الصورة
+                            <input asp-for="ImageFile" type="file" class="d-none" id="fileInput">
+                        </label>
+                        <small class="text-muted">اتركها فارغة للاحتفاظ بالصورة الحالية</small>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="btn btn-primary w-100">حفظ التغييرات</button>
-                <a asp-action="Index" class="btn btn-secondary w-100">إلغاء</a>
+
+            <hr class="my-4" style="opacity: 0.1;">
+
+            <div class="d-flex gap-3 mt-4">
+                <button type="submit" class="btn btn-dark btn-lg w-100 shadow-sm" style="background-color: #40415A; border-radius: 50px;">
+                    <i class="bi bi-save me-2"></i> حفظ التعديلات
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-lg w-100" style="border-radius: 50px;">
+                    إلغاء الرجوع
+                </a>
             </div>
         </form>
     </div>
+
+    <script>
+        // تغيير النص فوراً عند ضغط زرار الـ Toggle
+        const statusSwitch = document.getElementById('IsActiveSwitch');
+        const statusLabel = document.getElementById('statusLabel');
+
+        statusSwitch.addEventListener('change', function() {
+            if(this.checked) {
+                statusLabel.innerText = "المنتج نشط الآن";
+                statusLabel.style.color = "#27ae60";
+            } else {
+                statusLabel.innerText = "المنتج مخفي حالياً";
+                statusLabel.style.color = "#d9534f";
+            }
+        });
+
+        // معاينة الصورة فور اختيارها
+        document.getElementById('fileInput').onchange = e => {
+            const [file] = e.target.files;
+            if (file) {
+                document.getElementById('imgPreview').src = URL.createObjectURL(file);
+            }
+        }
+    </script>
 </body>
 </html>

@@ -14,7 +14,7 @@ namespace Fashion_Store_System.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
 
-        public int Quantity { get; set; }
+        //public int Quantity { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal Discount { get; set; }
 
@@ -25,7 +25,7 @@ namespace Fashion_Store_System.Models
 
         // Navigation Property
         public Category Category { get; set; }
-
+        public List<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;

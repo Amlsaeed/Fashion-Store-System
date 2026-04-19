@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|d:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\fashion store system\\fashion store system\\migrations\\20260418183719_addbranchandwarehouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8A528F28-C939-4130-BACB-B017716B4B88}|Fashion Store System\\Fashion Store System.csproj|solutionrelative:fashion store system\\migrations\\20260418183719_addbranchandwarehouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "20260418183719_AddBranchAndWarehouse.cs",
+              "DocumentMoniker": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Migrations\\20260418183719_AddBranchAndWarehouse.cs",
+              "RelativeDocumentMoniker": "Fashion Store System\\Migrations\\20260418183719_AddBranchAndWarehouse.cs",
+              "ToolTip": "D:\\\u0645\u062D\u0627\u0648\u0644\u0627\u062A\u064A\\Fashion Store System\\Fashion Store System\\Migrations\\20260418183719_AddBranchAndWarehouse.cs",
+              "RelativeToolTip": "Fashion Store System\\Migrations\\20260418183719_AddBranchAndWarehouse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-18T18:37:20.103Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

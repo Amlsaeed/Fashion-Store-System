@@ -8,6 +8,8 @@ namespace Fashion_Store_System.Models
         public int Id { get; set; }
 
         // ربط الصنف بالفاتورة الأم
+        public int ProductVariantId { get; set; }
+        public ProductVariant? ProductVariant { get; set; }
         public int SalesInvoiceId { get; set; }
         public SalesInvoice? SalesInvoice { get; set; }
 

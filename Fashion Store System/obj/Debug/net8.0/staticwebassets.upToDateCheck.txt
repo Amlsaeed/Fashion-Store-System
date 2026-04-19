@@ -3,7 +3,12 @@ wwwroot\favicon.ico
 wwwroot\images\categories\435fb9c8-1ae9-4b3d-9913-7597206b79ce-download.jfif
 wwwroot\images\categories\72b2660f-59cd-4506-b97b-7ca55e72f1f1-images 11).jfif
 wwwroot\images\categories\d241ffba-c0dc-4a61-a7f9-361cd0353b75-download (1).jfif
+wwwroot\images\Products\33869044-24d3-43e0-abd9-4885115fb4d1.png
+wwwroot\images\Products\7338bcbd-966c-4fa2-aad1-87e2d85a80c3.jfif
+wwwroot\images\Products\8800366f-23fe-4376-bb9a-c4173c9219a6.jfif
 wwwroot\images\Products\a9b4c5b2-7027-4b16-bbd3-309ba44d7c6a-images 11).jfif
+wwwroot\images\Products\b820f95c-6bb6-4b67-bcfa-99e7295942f5_download.jfif
+wwwroot\images\Products\ff0a6468-1670-4e52-991b-23e2965f47d6.jfif
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map

@@ -17,7 +17,7 @@ namespace Fashion_Store_System.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.21")
+                .HasAnnotation("ProductVersion", "8.0.23")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -81,14 +81,76 @@ namespace Fashion_Store_System.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("Fashion_Store_System.Models.ProductColor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductColors");
+                });
+
+            modelBuilder.Entity("Fashion_Store_System.Models.ProductSize", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductSizes");
+                });
+
+            modelBuilder.Entity("Fashion_Store_System.Models.ProductVariant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductColorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductSizeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductColorId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductSizeId");
+
+                    b.ToTable("ProductVariants");
                 });
 
             modelBuilder.Entity("Fashion_Store_System.Models.PurchaseInvoice", b =>
@@ -129,6 +191,9 @@ namespace Fashion_Store_System.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int");
+
                     b.Property<int>("PurchaseInvoiceId")
                         .HasColumnType("int");
 
@@ -141,6 +206,8 @@ namespace Fashion_Store_System.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductVariantId");
 
                     b.HasIndex("PurchaseInvoiceId");
 
@@ -178,6 +245,9 @@ namespace Fashion_Store_System.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductVariantId")
                         .HasColumnType("int");
 
                     b.Property<int>("PurchaseReturnId")
@@ -229,6 +299,9 @@ namespace Fashion_Store_System.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -241,6 +314,8 @@ namespace Fashion_Store_System.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductVariantId");
 
                     b.HasIndex("SalesInvoiceId");
 
@@ -255,6 +330,9 @@ namespace Fashion_Store_System.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("ReturnDate")
                         .HasColumnType("datetime2");
 
@@ -265,6 +343,8 @@ namespace Fashion_Store_System.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductVariantId");
 
                     b.ToTable("SalesReturns");
                 });
@@ -553,6 +633,33 @@ namespace Fashion_Store_System.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Fashion_Store_System.Models.ProductVariant", b =>
+                {
+                    b.HasOne("Fashion_Store_System.Models.ProductColor", "ProductColor")
+                        .WithMany()
+                        .HasForeignKey("ProductColorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Fashion_Store_System.Models.Product", "Product")
+                        .WithMany("Variants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Fashion_Store_System.Models.ProductSize", "ProductSize")
+                        .WithMany()
+                        .HasForeignKey("ProductSizeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ProductColor");
+
+                    b.Navigation("ProductSize");
+                });
+
             modelBuilder.Entity("Fashion_Store_System.Models.PurchaseInvoice", b =>
                 {
                     b.HasOne("Fashion_Store_System.Models.Supplier", "Supplier")
@@ -572,6 +679,12 @@ namespace Fashion_Store_System.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Fashion_Store_System.Models.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Fashion_Store_System.Models.PurchaseInvoice", "PurchaseInvoice")
                         .WithMany("PurchaseItems")
                         .HasForeignKey("PurchaseInvoiceId")
@@ -579,6 +692,8 @@ namespace Fashion_Store_System.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+
+                    b.Navigation("ProductVariant");
 
                     b.Navigation("PurchaseInvoice");
                 });
@@ -600,6 +715,12 @@ namespace Fashion_Store_System.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Fashion_Store_System.Models.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Fashion_Store_System.Models.SalesInvoice", "SalesInvoice")
                         .WithMany("SalesItems")
                         .HasForeignKey("SalesInvoiceId")
@@ -608,7 +729,20 @@ namespace Fashion_Store_System.Migrations
 
                     b.Navigation("Product");
 
+                    b.Navigation("ProductVariant");
+
                     b.Navigation("SalesInvoice");
+                });
+
+            modelBuilder.Entity("Fashion_Store_System.Models.SalesReturn", b =>
+                {
+                    b.HasOne("Fashion_Store_System.Models.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("Fashion_Store_System.Models.SalesReturnItem", b =>
@@ -685,6 +819,11 @@ namespace Fashion_Store_System.Migrations
             modelBuilder.Entity("Fashion_Store_System.Models.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Fashion_Store_System.Models.Product", b =>
+                {
+                    b.Navigation("Variants");
                 });
 
             modelBuilder.Entity("Fashion_Store_System.Models.PurchaseInvoice", b =>

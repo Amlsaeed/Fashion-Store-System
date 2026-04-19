@@ -1,6 +1,7 @@
 ﻿using Fashion_Store_System.Data;
 using Fashion_Store_System.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Fashion_Store_System.Controllers
@@ -26,8 +27,17 @@ namespace Fashion_Store_System.Controllers
         // 2. صفحة عمل فاتورة بيع جديدة (GET)
         public IActionResult Create()
         {
-            // بنجيب المنتجات اللي ليها كمية أكبر من صفر بس عشان نبيع منها
-            ViewBag.Products = _context.Products.Where(p => p.Quantity > 0).ToList();
+            var availableVariants = _context.ProductVariants
+         .Include(v => v.Product)
+         .Include(v => v.ProductColor)
+         .Include(v => v.ProductSize)
+         .Where(v => v.Quantity > 0)
+         .Select(v => new {
+             Id = v.Id,
+             DisplayName = $"{v.Product.Name} - {v.ProductColor.Name} - {v.ProductSize.Name} (المتاح: {v.Quantity})"
+         }).ToList();
+
+            ViewBag.Products = new SelectList(availableVariants, "Id", "DisplayName");
             return View();
         }
 
@@ -106,7 +116,6 @@ namespace Fashion_Store_System.Controllers
             if (Items == null || !Items.Any())
             {
                 ModelState.AddModelError("", "يجب إضافة صنف واحد على الأقل للفاتورة.");
-                ViewBag.Products = _context.Products.Where(p => p.Quantity > 0).ToList();
                 return View(invoice);
             }
 
@@ -115,52 +124,52 @@ namespace Fashion_Store_System.Controllers
                 try
                 {
                     invoice.SalesDate = DateTime.Now;
-                    invoice.TotalAmount = 0; // هنصفره ونحسبه جوه الـ Loop بناءً على سعر المخزن
+                    invoice.TotalAmount = 0;
 
                     _context.SalesInvoices.Add(invoice);
                     await _context.SaveChangesAsync();
 
                     foreach (var item in Items)
                     {
-                        // بنجيب المنتج من الداتابيز عشان ناخد السعر الحقيقي والكمية
-                        var product = await _context.Products.FindAsync(item.ProductId);
+                        // بنجيب الـ Variant المحدد (باللون والمقاس)
+                        var variant = await _context.ProductVariants
+                            .Include(v => v.Product)
+                            .FirstOrDefaultAsync(v => v.Id == item.ProductVariantId); // اتأكدي إن الاسم في الموديل ProductVariantId
 
-                        if (product != null)
+                        if (variant != null)
                         {
-                            if (product.Quantity >= item.Quantity)
+                            if (variant.Quantity >= item.Quantity)
                             {
-                                // 1. تثبيت سعر البيع من جدول المنتجات (مش من الفيو)
-                                item.UnitPrice = product.Price;
+                                // 1. تثبيت السعر من البرودكت الأساسي
+                                item.UnitPrice = variant.Product.Price;
 
-                                // 2. خصم الكمية من المخزن
-                                product.Quantity -= item.Quantity;
+                                // 2. خصم الكمية من الـ Variant الصح
+                                variant.Quantity -= item.Quantity;
 
                                 // 3. ربط الصنف بالفاتورة
                                 item.SalesInvoiceId = invoice.Id;
                                 _context.SalesItems.Add(item);
 
-                                // 4. إضافة قيمة الصنف لإجمالي الفاتورة
-                                invoice.TotalAmount += (item.Quantity * product.Price);
+                                // 4. الحساب الإجمالي
+                                invoice.TotalAmount += (item.Quantity * variant.Product.Price);
                             }
                             else
                             {
-                                throw new Exception($"عذراً، الكمية المتاحة من {product.Name} هي {product.Quantity} فقط.");
+                                throw new Exception($"الكمية المتاحة من {variant.Product.Name} ({variant.ProductColor?.Name}) هي {variant.Quantity} فقط.");
                             }
                         }
                     }
 
-                    // تحديث إجمالي الفاتورة النهائي بعد الحساب
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    TempData["Success"] = "تم تسجيل البيع بنجاح بسعر المخزن الحالي.";
+                    TempData["Success"] = "تمت عملية البيع بنجاح.";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
                     ModelState.AddModelError("", ex.Message);
-                    ViewBag.Products = _context.Products.Where(p => p.Quantity > 0).ToList();
                     return View(invoice);
                 }
             }
@@ -185,25 +194,34 @@ namespace Fashion_Store_System.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
+            // 1. نجيب الفاتورة ومعاها الأصناف (SalesItems)
             var invoice = await _context.SalesInvoices
                 .Include(s => s.SalesItems)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (invoice == null) return Json(new { success = false });
+            if (invoice == null) return Json(new { success = false, message = "الفاتورة غير موجودة" });
 
+            // 2. لفة على كل صنف في الفاتورة عشان نرجع الكمية لمكانها الصح
             foreach (var item in invoice.SalesItems)
             {
-                var product = await _context.Products.FindAsync(item.ProductId);
-                if (product != null)
+                // بنستخدم ProductVariantId اللي إنتي لسه ضايفاه في الموديل
+                var variant = await _context.ProductVariants.FindAsync(item.ProductVariantId);
+
+                if (variant != null)
                 {
-                    product.Quantity += item.Quantity; // بنرجع البضاعة للمخزن تاني
+                    // بنرجع البضاعة للـ (اللون والمقاس) المحدد
+                    variant.Quantity += item.Quantity;
+                    _context.Update(variant);
                 }
             }
 
+            // 3. نحذف الفاتورة نفسها (هتحذف الأصناف معاها أوتوماتيك لو فيه Cascade Delete)
             _context.SalesInvoices.Remove(invoice);
+
             await _context.SaveChangesAsync();
 
             return Json(new { success = true });
+
         }
 
         // 1. صفحة التعديل (GET)
@@ -234,43 +252,57 @@ namespace Fashion_Store_System.Controllers
             {
                 try
                 {
-                    // أ- نجيب الفاتورة القديمة بالأصناف اللي فيها (قبل التعديل)
+                    // أ- نجيب الفاتورة القديمة بالأصناف اللي فيها
                     var oldInvoice = await _context.SalesInvoices
                         .Include(s => s.SalesItems)
-                        .AsNoTracking() // مهمة جداً عشان ميعملش Conflict
+                        .AsNoTracking()
                         .FirstOrDefaultAsync(m => m.Id == id);
 
-                    // ب- إرجاع المخزن لأصله (بنزود الكميات اللي كانت متباعة قبل كدة)
+                    if (oldInvoice == null) return NotFound();
+
+                    // ب- إرجاع المخزن المطور لأصله (بنزود كميات الألوان والمقاسات القديمة)
                     foreach (var oldItem in oldInvoice.SalesItems)
                     {
-                        var product = await _context.Products.FindAsync(oldItem.ProductId);
-                        if (product != null)
+                        var variant = await _context.ProductVariants.FindAsync(oldItem.ProductVariantId);
+                        if (variant != null)
                         {
-                            product.Quantity += oldItem.Quantity; // رجعنا البضاعة المخزن مؤقتاً
+                            variant.Quantity += oldItem.Quantity; // رجعنا كل لون ومقاس لمكانه
+                            _context.Update(variant);
                         }
                     }
 
-                    // ج- مسح الأصناف القديمة من جدول المبيعات
-                    var oldItems = _context.SalesItems.Where(x => x.SalesInvoiceId == id);
-                    _context.SalesItems.RemoveRange(oldItems);
+                    // ج- مسح الأصناف القديمة من جدول SalesItems عشان هنضيف الجديد
+                    var oldItemsRange = _context.SalesItems.Where(x => x.SalesInvoiceId == id);
+                    _context.SalesItems.RemoveRange(oldItemsRange);
 
-                    // د- إضافة الأصناف الجديدة والخصم من المخزن من جديد
-                    invoice.TotalAmount = Items.Sum(i => i.Quantity * i.UnitPrice);
+                    // د- إضافة الأصناف الجديدة والخصم من الـ Variants من جديد
+                    invoice.TotalAmount = 0; // هنحسبه من جديد
+
                     foreach (var newItem in Items)
                     {
-                        var product = await _context.Products.FindAsync(newItem.ProductId);
+                        var variant = await _context.ProductVariants
+                            .Include(v => v.Product)
+                            .FirstOrDefaultAsync(v => v.Id == newItem.ProductVariantId);
 
-                        if (product != null)
+                        if (variant != null)
                         {
-                            if (product.Quantity >= newItem.Quantity)
+                            if (variant.Quantity >= newItem.Quantity)
                             {
-                                product.Quantity -= newItem.Quantity; // خصم الكمية الجديدة
+                                // 1. خصم الكمية الجديدة من اللون والمقاس الصح
+                                variant.Quantity -= newItem.Quantity;
+
+                                // 2. تثبيت السعر والربط
+                                newItem.UnitPrice = variant.Product.Price;
                                 newItem.SalesInvoiceId = id;
+
                                 _context.SalesItems.Add(newItem);
+
+                                // 3. تحديث الإجمالي
+                                invoice.TotalAmount += (newItem.Quantity * variant.Product.Price);
                             }
                             else
                             {
-                                throw new Exception($"الكمية المطلوبة من {product.Name} غير متوفرة في المخزن!");
+                                throw new Exception($"الكمية المطلوبة من {variant.Product.Name} غير متوفرة!");
                             }
                         }
                     }
@@ -279,7 +311,7 @@ namespace Fashion_Store_System.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    TempData["Success"] = "تم تعديل فاتورة البيع وتحديث المخزن بنجاح";
+                    TempData["Success"] = "تم تعديل الفاتورة وتحديث مخزن الألوان والمقاسات.";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -287,11 +319,17 @@ namespace Fashion_Store_System.Controllers
                     await transaction.RollbackAsync();
                     ModelState.AddModelError("", "حدث خطأ: " + ex.Message);
 
-                    ViewBag.Products = _context.Products.ToList();
+                    // إعادة تعبئة المنتجات للـ View في حالة الخطأ
+                    ViewBag.Products = _context.ProductVariants
+                        .Include(v => v.Product).Include(v => v.ProductColor).Include(v => v.ProductSize)
+                        .Select(v => new { Id = v.Id, DisplayName = v.Product.Name + " - " + v.ProductColor.Name })
+                        .ToList();
+
                     return View(invoice);
                 }
             }
         }
+
     }
 }
 

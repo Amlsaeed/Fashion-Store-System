@@ -1,0 +1,41 @@
+﻿@model Fashion_Store_System.Models.ProductSize
+
+@{
+    ViewData["Title"] = "تعديل المقاس";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0" style="border-radius: 25px;">
+                <div class="card-header bg-primary text-white text-center py-4" style="border-radius: 25px 25px 0 0;">
+                    <i class="bi bi-pencil-square fs-1"></i>
+                    <h3 class="mt-2 fw-bold">تعديل مقاس</h3>
+                    <p class="mb-0 opacity-75">أنت الآن تقوم بتعديل المقاس: <span class="fw-bold">@Model.Name</span></p>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="Name" class="form-control rounded-pill px-4" id="sizeName" placeholder="مثلاً: XL" style="border: 2px solid #eee;" />
+                            <label for="sizeName" class="ms-3 text-muted">اسم المقاس</label>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow">
+                                <i class="bi bi-check2-circle me-1"></i> حفظ التعديلات
+                            </button>
+                            <a asp-action="Index" class="btn btn-light btn-sm rounded-pill text-muted mt-2">
+                                إلغاء والعودة للقائمة
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
