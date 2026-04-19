@@ -1,0 +1,62 @@
+﻿@model IEnumerable<Fashion_Store_System.Models.ProductSize>
+
+@{
+    ViewData["Title"] = "إدارة مقاسات المنتجات";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="card shadow-sm border-0 mt-4" style="border-radius: 20px;">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center" style="border-radius: 20px 20px 0 0;">
+            <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-palette me-2 text-primary"></i> قائمة المقاسات المتاحة</h5>
+            <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="bi bi-plus-lg"></i> إضافة مقاس جديد
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3 text-muted" style="width: 10%">#</th>
+                            <th class="py-3 text-muted">اسم المقاس</th>
+                            <th class="py-3 text-center text-muted" style="width: 30%">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold">@item.Id</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge rounded-pill" style="background-color: var(--accent-color); padding: 8px 15px; font-size: 0.9rem;">
+                                            @item.Name
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <a asp-controller="ProductSizes" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info border-0 px-3" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-controller="ProductSizes" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger border-0 px-3" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 158, 247, 0.02) !important;
+        transition: 0.3s;
+    }
+</style>

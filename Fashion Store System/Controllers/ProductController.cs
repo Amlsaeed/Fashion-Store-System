@@ -1,222 +1,217 @@
 ﻿using Fashion_Store_System.Data;
 using Fashion_Store_System.Models;
 using Fashion_Store_System.ViewModels.ProductVM;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
-namespace Fashion_Store_System.Controllers
+public class ProductController : Controller
 {
-    public class ProductController : Controller
+    private readonly ApplicationDbContext _context;
+    public ProductController(ApplicationDbContext context) => _context = context;
+
+    // --- 1. العرض (Index) ---
+    public async Task<IActionResult> Index()
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        // سحب البيانات مع الجداول المرتبطة
+        var rawData = await _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.Variants)
+            .OrderByDescending(p => p.Id)
+            .ToListAsync();
 
-        // Constructor
-        public ProductController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        // تحويل البيانات للـ ViewModel وحساب الكميات
+        var products = rawData.Select(p => new ProductVMDt
         {
-            _context = context;
-            _webHostEnvironment = webHostEnvironment;
-        }
-        //public IActionResult Index()
-        //{
-        //    return View();
-        //}
-
-        public async Task<IActionResult> Index()
-        {
-            
-            var products = await _context.Products
-        .Include(p => p.Category)
-        .OrderByDescending(p => p.Id) // رتبنا حسب الـ ID عشان الأحدث يظهر فوق
-        .Select(p => new ProductVMDt
-        {
-            Id = p.Id, // التأكد من إرسال الـ ID
+            Id = p.Id,
             Name = p.Name,
             Price = p.Price,
-            Quantity = p.Quantity,
-            Discount = p.Discount,
             ImageUrl = p.ImageUrl,
-            CategoryName = p.Category.Name,
+            CategoryName = p.Category?.Name ?? "بدون قسم",
+            Discount = p.Discount,
             IsActive = p.IsActive,
-            CreatedAt = p.CreatedAt
-        })
-        .ToListAsync();
-
-            // 1. حساب إجمالي عدد المنتجات (الأنواع)
-            ViewBag.TotalProducts = products.Count();
-
-            // 2. حساب إجمالي كمية القطع في المخزن (كل الكميات مجموعة)
-            ViewBag.TotalQuantity = products.Sum(p => p.Quantity);
-
-            // 3. حساب إجمالي قيمة البضاعة (السعر × الكمية لكل منتج)
-            ViewBag.TotalValue = products.Sum(p => p.Price * p.Quantity);
-
-            // 4. عد المنتجات اللي كميتها أقل من 5 (النواقص)
-            ViewBag.LowStockCount = products.Count(p => p.Quantity <= 5);
-
-            return View(products);
-        }
-
-        // 1. أكشن الـ GET عشان نفتح صفحة الإضافة
-        [HttpGet]
-        public IActionResult Create()
-        {
-            // بنجهز قائمة الأقسام عشان الأدمن يختار المنتج ده تبع أنهي قسم
-            var categories = _context.Category.ToList();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name");
-
-            return View();
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ProductVM model)
-        {
-            // شيلنا شرط الـ ModelState.IsValid مؤقتاً للتجربة أو عشان نتأكد إن البيانات بتدخل
-            try
+            // الحسبة اللي بتصلح الأصفار
+            Quantity = p.Variants?.Sum(v => v.Quantity) ?? 0,
+            Variants = p.Variants?.Select(v => new ProductVariantVMDt
             {
-                string fileName = "default-product.png"; // قيمة افتراضية
+                ColorName = v.ProductColor?.Name,
+                SizeName = v.ProductSize?.Name,
+                Quantity = v.Quantity
+            }).ToList()
+        }).ToList();
 
-                if (model.ImageFile != null)
+        // حسابات الـ ViewBag من القائمة الجاهزة
+        ViewBag.TotalProducts = products.Count;
+        ViewBag.TotalQuantity = products.Sum(p => p.Quantity);
+        ViewBag.LowStockCount = products.Count(p => p.Quantity <= 5);
+        ViewBag.TotalValue = products.Sum(p => p.Price * p.Quantity);
+
+        return View(products);
+    }
+
+    // --- 2. الإضافة (Create) ---
+    // في الـ GET Action
+    public async Task<IActionResult> Create()
+    {
+        ViewBag.CategoryList = new SelectList(await _context.Category.ToListAsync(), "Id", "Name");
+        ViewBag.ColorList = new SelectList(await _context.ProductColors.ToListAsync(), "Id", "Name");
+        ViewBag.SizeList = new SelectList(await _context.ProductSizes.ToListAsync(), "Id", "Name");
+
+        return View(new ProductVM());
+    }
+
+    // في الـ POST Action (لو الداتا منقوصة ورجعتي للـ View)
+   
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(ProductVM vm, int[] VariantColors, int[] VariantSizes, int[] VariantQuantities)
+    {
+        if (ModelState.IsValid)
+        {
+            // 1. معالجة الصورة (نفس الكود السابق)
+            string fileName = "default.jpg";
+
+            if (vm.ImageFile != null)
+            {
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/Products");
+
+                // اسم عشوائي عشان يمنع التكرار
+                fileName = Guid.NewGuid().ToString() + Path.GetExtension(vm.ImageFile.FileName);
+
+                string filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "Images/Products");
-                    if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
-
-                    fileName = Guid.NewGuid().ToString() + "-" + model.ImageFile.FileName;
-                    string filePath = Path.Combine(uploadDir, fileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await model.ImageFile.CopyToAsync(fileStream);
-                    }
-                    fileName = "/Images/Products/" + fileName; // المسار الكامل
+                    await vm.ImageFile.CopyToAsync(stream);
                 }
-
-                var product = new Product
-                {
-                    Name = model.Name,
-                    Description = model.Description,
-                    Price = model.Price,
-                    Quantity = model.Quantity,
-                    Discount = model.Discount,
-                    CategoryId = model.CategoryId,
-                    ImageUrl = fileName,
-                    IsActive = model.IsActive,
-                    CreatedAt = DateTime.Now
-                };
-
-                _context.Products.Add(product);
-                await _context.SaveChangesAsync(); // السطر ده هو اللي بيسمع في الداتابيز
-
-                TempData["SuccessMessage"] = "تم إضافة المنتج بنجاح!";
-                return RedirectToAction(nameof(Index)); // هيروح للجدول والرسالة هتظهر هناك
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "حدث خطأ: " + ex.Message;
             }
 
-            ViewBag.CategoryList = new SelectList(_context.Category.ToList(), "Id", "Name");
-            return View(model);
-        }
-
-
-
-        // 1. التفاصيل (Details)
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (product == null) return NotFound();
-
-            return View(product);
-        }
-
-        // 2. التعديل (Edit - GET)
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var product = await _context.Products.FindAsync(id);
-            if (product == null) return NotFound();
-
-            // تجهيز البيانات للـ ViewModel
-            var model = new ProductVM
+            // 2. إنشاء كائن المنتج الأساسي
+            var product = new Product
             {
-                Name = product.Name,
-                Description = product.Description,
-                Price = product.Price,
-                Quantity = product.Quantity,
-                Discount = product.Discount,
-                CategoryId = product.CategoryId,
-                IsActive = product.IsActive
+                Name = vm.Name,
+                Description = vm.Description,
+                Price = vm.Price,
+                Discount = vm.Discount,
+                CategoryId = vm.CategoryId,
+                ImageUrl = fileName,
+                IsActive = vm.IsActive
             };
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync(); // بنحفظ عشان ناخد الـ ProductId
 
-            ViewBag.ImageUrl = product.ImageUrl; // عشان نعرض الصورة القديمة
-            ViewBag.CategoryList = new SelectList(_context.Category.ToList(), "Id", "Name", product.CategoryId);
-            return View(model);
+            // 3. الربط مع الكميات المحددة يدوياً
+            if (VariantQuantities != null && VariantQuantities.Length > 0)
+            {
+                for (int i = 0; i < VariantQuantities.Length; i++)
+                {
+                    var variant = new ProductVariant
+                    {
+                        ProductId = product.Id,
+                        ProductColorId = VariantColors[i],
+                        ProductSizeId = VariantSizes[i],
+                        Quantity = VariantQuantities[i]
+                    };
+                    _context.ProductVariants.Add(variant);
+                }
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
         }
+        return View(vm);
+    }
+    // --- 3. التعديل (Edit) ---
+    public async Task<IActionResult> Edit(int id)
+    {
+        // 1. نجيب المنتج من الداتابيز
+        var product = await _context.Products.FindAsync(id);
+        if (product == null) return NotFound();
 
-        // 3. التعديل (Edit - POST)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, ProductVM model)
+        // 2. نملا الـ ViewModel بالداتا اللي جبناها
+        var viewModel = new ProductVM
         {
-            var product = await _context.Products.FindAsync(id);
+            Id = product.Id,
+            Name = product.Name,
+            Price = product.Price,
+            Discount = product.Discount,
+            Description = product.Description,
+            CategoryId = product.CategoryId,
+            IsActive = product.IsActive
+            // لاحظي هنا مش بنحط الـ ImageFile لأنه ملف هيترفع، بس بنعرض الصورة القديمة في الـ ViewBag
+        };
+
+        // 3. نجهز القوائم والصورة للعرض
+        ViewBag.CategoryList = new SelectList(_context.Category, "Id", "Name", product.CategoryId);
+        ViewBag.CurrentImageUrl = product.ImageUrl;
+
+        return View(viewModel); // بنبعت الـ ViewModel مش الـ Product
+    }
+    [HttpPost]
+    public async Task<IActionResult> Edit(ProductVM model)
+    {
+        if (ModelState.IsValid)
+        {
+            // 1. نجيب المنتج الأصلي من الداتابيز عشان نحدثه
+            var product = await _context.Products.FindAsync(model.Id);
             if (product == null) return NotFound();
 
-            if (ModelState.IsValid)
+            // 2. نحدث البيانات الأساسية
+            product.Name = model.Name;
+            product.Price = model.Price;
+            product.Discount = model.Discount;
+            product.Description = model.Description;
+            product.CategoryId = model.CategoryId;
+            product.IsActive = model.IsActive;
+
+            // 3. لو اليوزر رفع صورة جديدة، بنعالجها
+            if (model.ImageFile != null)
             {
-                if (model.ImageFile != null) // لو الأدمن رفع صورة جديدة
+                string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/Products");
+                string fileName = Guid.NewGuid().ToString() + "_" + model.ImageFile.FileName;
+                string filePath = Path.Combine(folder, fileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "Images/Products");
-                    string fileName = Guid.NewGuid().ToString() + "-" + model.ImageFile.FileName;
-                    string filePath = Path.Combine(uploadDir, fileName);
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await model.ImageFile.CopyToAsync(fileStream);
-                    }
-                    product.ImageUrl = "/Images/Products/" + fileName;
+                    await model.ImageFile.CopyToAsync(fileStream);
                 }
-
-                product.Name = model.Name;
-                product.Description = model.Description;
-                product.Price = model.Price;
-                product.Quantity = model.Quantity;
-                product.Discount = model.Discount;
-                product.CategoryId = model.CategoryId;
-                product.IsActive = model.IsActive;
-
-                _context.Update(product);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم تحديث بيانات المنتج بنجاح!";
-                return RedirectToAction(nameof(Index));
+                product.ImageUrl = fileName; // نحدث اسم الصورة الجديد
             }
-            ViewBag.CategoryList = new SelectList(_context.Category.ToList(), "Id", "Name", model.CategoryId);
-            return View(model);
-        }
 
-        // 4. الحذف (Delete - POST)
-        [HttpPost]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null) return Json(new { success = false, message = "المنتج غير موجود" });
-
-            _context.Products.Remove(product);
+            _context.Update(product);
             await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "تم حذف المنتج نهائياً" });
+            return RedirectToAction(nameof(Index));
         }
 
+        // لو الـ Model مش Valid، بنرجع لنفس الصفحة ونملا الـ Dropdown تاني
+        ViewBag.CategoryList = new SelectList(_context.Category, "Id", "Name", model.CategoryId);
+        return View(model);
+    }
+
+    // --- 4. الحذف (Delete) ---
+    [HttpPost]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null) return Json(new { success = false });
+
+        _context.Products.Remove(product);
+        await _context.SaveChangesAsync();
+        return Json(new { success = true });
+    }
 
 
+    public async Task<IActionResult> Details(int id)
+    {
+        var product = await _context.Products
+            .Include(p => p.Category) // عشان اسم القسم يظهر
+            .Include(p => p.Variants) // جدول الـ Variants نفسه
+                .ThenInclude(v => v.ProductColor) // جدول الألوان المرتبط بالـ Variant
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.ProductSize)  // جدول المقاسات المرتبط بالـ Variant
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (product == null) return NotFound();
+
+        return View(product);
     }
 }
-

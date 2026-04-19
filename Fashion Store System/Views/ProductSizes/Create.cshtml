@@ -1,0 +1,49 @@
+﻿@model Fashion_Store_System.Models.ProductSize
+
+@{
+    ViewData["Title"] = "إضافة مقاس جديد";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow border-0 animate__animated animate__zoomIn" style="border-radius: 25px; overflow: hidden;">
+
+                <div class="card-header bg-warning text-white text-center py-4">
+                    <i class="bi bi-plus-circle-dotted fs-1"></i>
+                    <h3 class="mt-2 fw-bold">إضافة مقاس جديد</h3>
+                    <p class="mb-0 opacity-75">حدد المقاسات المتاحة لمنتجاتك (S, M, L, XL...)</p>
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="Name" class="form-control rounded-pill px-4" id="sizeInput" placeholder="مثلاً: XL" style="border: 2px solid #f8f9fa; background-color: #fdfdfd;" />
+                            <label for="sizeInput" class="ms-2 text-muted text-secondary">اسم المقاس</label>
+                            <span asp-validation-for="Name" class="text-danger small ms-3"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-warning btn-lg rounded-pill text-white shadow-sm fw-bold">
+                                <i class="bi bi-check-lg me-1"></i> إتمام الإضافة
+                            </button>
+
+                            <a asp-action="Index" class="btn btn-link text-muted text-decoration-none mt-2">
+                                <i class="bi bi-arrow-right-short"></i> العودة لقائمة المقاسات
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

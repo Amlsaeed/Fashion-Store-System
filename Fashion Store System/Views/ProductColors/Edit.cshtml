@@ -1,0 +1,67 @@
+﻿@model Fashion_Store_System.Models.ProductColor
+
+@{
+    ViewData["Title"] = "تعديل اللون";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0 animate__animated animate__fadeInUp" style="border-radius: 20px;">
+                <div class="card-header bg-primary text-white text-center py-4" style="border-radius: 20px 20px 0 0;">
+                    <i class="bi bi-pencil-fill fs-1"></i>
+                    <h3 class="fw-bold mt-2">تعديل بيانات اللون</h3>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Edit" id="editForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="Name" class="form-control rounded-pill px-4" id="colorName" placeholder="الاسم" style="border: 2px solid #f0f0f0;" />
+                            <label for="colorName" class="ms-2">اسم اللون</label>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm">
+                                <i class="bi bi-save me-2"></i> حفظ التغييرات
+                            </button>
+                            <a asp-action="Index" class="btn btn-light rounded-pill text-muted">
+                                <i class="bi bi-arrow-right-short"></i> العودة للقائمة
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // كود لعرض رسالة نجاح إذا تم الحفظ بنجاح (بيستلم رسالة من الـ Controller)
+        $(document).ready(function () {
+            var message = '@TempData["SuccessMessage"]';
+            if (message) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم بنجاح!',
+                    text: message,
+                    confirmButtonColor: '#009ef7',
+                    timer: 3000
+                });
+            }
+        });
+    </script>
+
+
+}
+}

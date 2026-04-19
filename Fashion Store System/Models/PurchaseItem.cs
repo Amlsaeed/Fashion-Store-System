@@ -5,6 +5,8 @@ namespace Fashion_Store_System.Models
     public class PurchaseItem
     {
         public int Id { get; set; }
+        public int ProductVariantId { get; set; } // تأكدي من وجود هذا السطر
+        public ProductVariant? ProductVariant { get; set; }
 
         public int PurchaseInvoiceId { get; set; } // تتبع أنهي فاتورة
         public PurchaseInvoice? PurchaseInvoice { get; set; }

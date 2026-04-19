@@ -23,7 +23,14 @@ namespace Fashion_Store_System.ViewModels.ProductVM
         public string? CategoryName { get; set; }
 
         public bool IsActive { get; set; } = true;
-
+        public List<ProductVariantVMDt> Variants { get; set; } // قائمة فيها اللون والمقاس والكمية
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
+
+    public class ProductVariantVMDt
+    {
+        public string ColorName { get; set; }
+        public string SizeName { get; set; }
+        public int Quantity { get; set; }
     }
 }

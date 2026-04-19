@@ -13,10 +13,8 @@ namespace Fashion_Store_System.Controllers
             _context = dbContext;
         }
 
-      
         public async Task<IActionResult> Index()
         {
-            // بنجيب الفواتير ومعاها اسم المورد عشان تظهر في الجدول
             var invoices = await _context.PurchaseInvoice
                 .Include(i => i.Supplier)
                 .OrderByDescending(i => i.InvoiceDate)
@@ -27,21 +25,19 @@ namespace Fashion_Store_System.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            // 1. هاتي الموردين والمنتجات من الداتابيز
-            var suppliersList = _context.Supplier.ToList();
-            var productsList = _context.Products.ToList();
+            ViewBag.Suppliers = _context.Supplier.ToList();
 
-            // 2. اطبعي في الـ Console عشان نتأكد إنهم موجودين (اختياري للتأكد)
-            System.Diagnostics.Debug.WriteLine("عدد الموردين: " + suppliersList.Count);
-
-            // 3. حطيهم في الـ ViewBag
-            ViewBag.Suppliers = suppliersList;
-            ViewBag.Products = productsList;
+            // تعديل: نجيب الـ Variants عشان نختار المقاس واللون في الشراء
+            ViewBag.Products = _context.ProductVariants
+                .Include(v => v.Product)
+                .Select(v => new {
+                    Id = v.Id,
+                    Name = v.Product.Name + " - " + v.ProductColor.Name + " (" + v.ProductSize.Name + ")"
+                }).ToList();
 
             return View();
         }
 
-        // 3. استقبال الفاتورة وحفظها وتحديث المخزن (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PurchaseInvoice invoice, List<PurchaseItem> Items)
@@ -57,165 +53,128 @@ namespace Fashion_Store_System.Controllers
                 {
                     try
                     {
-                        // أ- حساب إجمالي الفاتورة من الأصناف
                         invoice.TotalAmount = Items.Sum(i => i.Quantity * i.UnitPrice);
                         invoice.InvoiceDate = DateTime.Now;
 
-                        // ب- حفظ رأس الفاتورة
                         _context.PurchaseInvoice.Add(invoice);
                         await _context.SaveChangesAsync();
 
-                        // ج- لفة على كل صنف (Item) في الفاتورة
                         foreach (var item in Items)
                         {
-                            // ربط الصنف بالفاتورة اللي لسه مخلوقة
                             item.PurchaseInvoiceId = invoice.Id;
                             _context.PurchaseItem.Add(item);
 
-                            // د- التحديث السحري للمخزن (أهم خطوة)
-                            var product = await _context.Products.FindAsync(item.ProductId);
-                            if (product != null)
+                            // تعديل: التعامل مع الـ Variant بدلاً من Product
+                            var variant = await _context.ProductVariants.FindAsync(item.ProductVariantId);
+                            if (variant != null)
                             {
-                                // بنزود الكمية الجديدة على اللي موجود
-                                product.Quantity += item.Quantity;
-
-                                // اختياري: تحديث سعر الشراء في جدول المنتجات لو حابة
-                                // product.Price = item.UnitPrice * 1.2m; // مثلاً بنحط هامش ربح 20%
+                                variant.Quantity += item.Quantity;
+                                _context.Update(variant);
                             }
                         }
 
                         await _context.SaveChangesAsync();
-                        await transaction.CommitAsync(); // تثبيت العملية في الداتابيز
+                        await transaction.CommitAsync();
 
-                        TempData["Success"] = "تم حفظ الفاتورة وتحديث كميات المخزن بنجاح.";
+                        TempData["Success"] = "تم تسجيل المشتريات وتحديث المخزن.";
                         return RedirectToAction(nameof(Index));
                     }
                     catch (Exception ex)
                     {
-                        await transaction.RollbackAsync(); // لو حصل أي غلط، الغي كل حاجة عشان الداتابيز متلخبطش
-                        ModelState.AddModelError("", "حدث خطأ أثناء الحفظ: " + ex.Message);
+                        await transaction.RollbackAsync();
+                        ModelState.AddModelError("", "حدث خطأ: " + ex.Message);
                     }
                 }
             }
 
-            // لو حصل مشكلة، بنرجع البيانات لليستات تاني عشان الصفحة متضربش
             ViewBag.Suppliers = _context.Supplier.ToList();
-            ViewBag.Products = _context.Products.ToList();
+            ViewBag.Products = _context.ProductVariants.Include(v => v.Product)
+                .Select(v => new { Id = v.Id, Name = v.Product.Name + " - " + v.ProductColor.Name }).ToList();
             return View(invoice);
         }
 
-        // 4. عرض تفاصيل فاتورة قديمة
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var invoice = await _context.PurchaseInvoice
-                .Include(i => i.Supplier)
-                .Include(i => i.PurchaseItems)
-                    .ThenInclude(pi => pi.Product)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (invoice == null) return NotFound();
-
-            return View(invoice);
-        }
-
+        // تعديل أكشن الحذف ليتعامل مع الـ Variants
         [HttpPost]
-         public async Task<IActionResult> Delete(int id)
-   {
-    var invoice = await _context.PurchaseInvoice
-        .Include(i => i.PurchaseItems)
-        .FirstOrDefaultAsync(m => m.Id == id);
-
-    if (invoice == null) return Json(new { success = false, message = "الفاتورة غير موجودة" });
-
-    // قبل ما نحذف، لازم ننقص الكميات اللي زودناها في المخزن
-    foreach (var item in invoice.PurchaseItems)
-    {
-        var product = await _context.Products.FindAsync(item.ProductId);
-        if (product != null)
+        public async Task<IActionResult> Delete(int id)
         {
-            product.Quantity -= item.Quantity; // بنرجع المخزن لأصله
-        }
-    }
-
-    _context.PurchaseInvoice.Remove(invoice);
-    await _context.SaveChangesAsync();
-    
-    return Json(new { success = true, message = "تم حذف الفاتورة وتعديل المخزن" });
-}
-
-        // 1. صفحة التعديل (GET)
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null) return NotFound();
-
             var invoice = await _context.PurchaseInvoice
                 .Include(i => i.PurchaseItems)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (invoice == null) return NotFound();
+            if (invoice == null) return Json(new { success = false });
 
-            ViewBag.Suppliers = _context.Supplier.ToList();
-            ViewBag.Products = _context.Products.ToList();
+            foreach (var item in invoice.PurchaseItems)
+            {
+                var variant = await _context.ProductVariants.FindAsync(item.ProductVariantId);
+                if (variant != null)
+                {
+                    variant.Quantity -= item.Quantity; // بنرجع المخزن لأصله
+                    _context.Update(variant);
+                }
+            }
 
-            return View(invoice);
+            _context.PurchaseInvoice.Remove(invoice);
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
         }
 
-        // 2. معالجة التعديل (POST)
+        // تعديل أكشن التعديل (Edit) ليتعامل مع الـ Variants
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, PurchaseInvoice invoice, List<PurchaseItem> Items)
         {
             if (id != invoice.Id) return NotFound();
 
-            try
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                // أ- نجيب الفاتورة القديمة بالأصناف اللي فيها قبل ما تتعدل
-                var oldInvoice = await _context.PurchaseInvoice
-                    .Include(i => i.PurchaseItems)
-                    .AsNoTracking() // مهم عشان ميعملش Conflict مع التعديل الجديد
-                    .FirstOrDefaultAsync(m => m.Id == id);
-
-                // ب- نرجع المخزن لأصله (نطرح الكميات القديمة)
-                foreach (var oldItem in oldInvoice.PurchaseItems)
+                try
                 {
-                    var product = await _context.Products.FindAsync(oldItem.ProductId);
-                    if (product != null) product.Quantity -= oldItem.Quantity;
+                    var oldInvoice = await _context.PurchaseInvoice
+                        .Include(i => i.PurchaseItems)
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(m => m.Id == id);
+
+                    // 1. عكس الكميات القديمة من الـ Variants
+                    foreach (var oldItem in oldInvoice.PurchaseItems)
+                    {
+                        var variant = await _context.ProductVariants.FindAsync(oldItem.ProductVariantId);
+                        if (variant != null)
+                        {
+                            variant.Quantity -= oldItem.Quantity;
+                            _context.Update(variant);
+                        }
+                    }
+
+                    // 2. مسح الأصناف القديمة
+                    var oldItems = _context.PurchaseItem.Where(x => x.PurchaseInvoiceId == id);
+                    _context.PurchaseItem.RemoveRange(oldItems);
+
+                    // 3. إضافة الجديدة وتحديث المخزن
+                    invoice.TotalAmount = Items.Sum(i => i.Quantity * i.UnitPrice);
+                    foreach (var newItem in Items)
+                    {
+                        newItem.PurchaseInvoiceId = id;
+                        _context.PurchaseItem.Add(newItem);
+
+                        var variant = await _context.ProductVariants.FindAsync(newItem.ProductVariantId);
+                        if (variant != null)
+                        {
+                            variant.Quantity += newItem.Quantity;
+                            _context.Update(variant);
+                        }
+                    }
+
+                    _context.Update(invoice);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-
-                // ج- نمسح الأصناف القديمة من جدول PurchaseItems
-                var oldItems = _context.PurchaseItem.Where(x => x.PurchaseInvoiceId == id);
-                _context.PurchaseItem.RemoveRange(oldItems);
-
-                // د- نضيف الأصناف الجديدة ونحدث المخزن (نجمع الكميات الجديدة)
-                invoice.TotalAmount = Items.Sum(i => i.Quantity * i.UnitPrice);
-                foreach (var newItem in Items)
+                catch (Exception ex)
                 {
-                    newItem.PurchaseInvoiceId = id;
-                    _context.PurchaseItem.Add(newItem);
-
-                    var product = await _context.Products.FindAsync(newItem.ProductId);
-                    if (product != null) product.Quantity += newItem.Quantity;
+                    await transaction.RollbackAsync();
+                    return View(invoice);
                 }
-
-                _context.Update(invoice);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "تم تعديل الفاتورة وتحديث المخزن بنجاح";
             }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "حدث خطأ: " + ex.Message;
-            }
-
-            return RedirectToAction(nameof(Index));
         }
-
-
-
-
     }
-
-
 }
-

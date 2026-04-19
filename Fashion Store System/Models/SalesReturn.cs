@@ -6,6 +6,8 @@ namespace Fashion_Store_System.Models
     {
         [Key]
         public int Id { get; set; }
+        public int ProductVariantId { get; set; }
+        public ProductVariant? ProductVariant { get; set; }
         public int SalesInvoiceId { get; set; } // ربط بالفاتورة الأصلية
         public DateTime ReturnDate { get; set; } = DateTime.Now;
         public decimal TotalRefundAmount { get; set; }
